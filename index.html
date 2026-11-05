@@ -4,10 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>우리 반 독서 캘린더</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&family=Nanum+Pen+Script&display=swap">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; font-src 'self'; img-src data: blob:; connect-src 'none'; form-action 'none'; base-uri 'none'">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex, nofollow">
 <style>
+@font-face { font-family: "Jua"; src: url("fonts/jua.woff2") format("woff2"); font-display: swap; }
+@font-face { font-family: "Gowun Dodum"; src: url("fonts/gowun-dodum.woff2") format("woff2"); font-display: swap; }
+@font-face { font-family: "Nanum Pen Script"; src: url("fonts/nanum-pen.woff2") format("woff2"); font-display: swap; }
 /* Layout: a classroom wall calendar in calm pastels. Book covers become soft stickers on its dates. Single light look by choice. */
 :root {
   --wall: #e9eff1;
@@ -479,6 +482,7 @@ function viewWho() {
       ${kids ? `<div class="kids">${kids}</div>` : ''}
       <form data-form="addKid" class="stack">
         <label class="field"><span>${state.kids.length ? '새 친구 이름' : '내 이름'}</span>
+          <small>실명 대신 번호나 별명을 써도 좋아요.</small>
           <input id="kid-name" type="text" maxlength="12" autocomplete="off" required></label>
         ${state.error ? `<p class="error">${esc(state.error)}</p>` : ''}
         <button class="btn primary">내 달력 만들기</button>
@@ -528,7 +532,8 @@ function viewTeacher() {
     : `<div class="row"><span>${esc(k.name)} (스티커 ${stickerCount(k.id)}개)</span><button class="btn quiet danger" data-act="askDeleteKid" data-id="${esc(k.id)}">지우기</button></div>`).join('');
   return `<div class="bar">${back}</div><section class="sheet stack">
     <h1>교사용: 기록 옮기기와 관리</h1>
-    <p>기록은 이 기기의 브라우저에만 저장돼요. 브라우저 기록을 지우거나 기기를 바꾸기 전에 파일로 내보내 두세요.</p>
+    <p>기록은 이 기기의 브라우저에만 저장되고 인터넷으로 보내지 않아요. 브라우저 기록을 지우거나 기기를 바꾸기 전에 파일로 내보내 두세요.</p>
+    <p class="notice">내보낸 파일에는 학생 이름과 사진, 글이 들어 있어요. 공개된 곳에 올리지 말고 안전하게 보관해 주세요.</p>
     <div class="row">
       <button class="btn" data-act="exportAll">파일로 내보내기</button>
       <label class="btn file">파일 불러오기<input id="import-file" type="file" accept=".json,application/json"></label>
@@ -639,7 +644,7 @@ function viewForm() {
           <div class="stack">
             <label class="btn file">표지 사진 올리기<input id="book-cover" type="file" accept="image/*"></label>
             <button type="button" class="btn quiet" id="cover-clear" ${f.cover ? '' : 'hidden'}>사진 빼기</button>
-            <small>사진이 없으면 색깔 스티커에 제목이 들어가요.</small>
+            <small>책 표지만 찍어 주세요. 얼굴이나 이름이 나오지 않게 해요. 사진이 없으면 색깔 스티커에 제목이 들어가요.</small>
             <div class="colors" role="group" aria-label="스티커 색깔">
               ${COLORS.map(c => `<button type="button" class="swatch" data-color="${c}" style="background:var(--s-${c})" aria-label="${COLOR_NAMES[c]}" aria-pressed="${f.color === c}"></button>`).join('')}
             </div>

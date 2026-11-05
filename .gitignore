@@ -1,0 +1,2 @@
+# Teacher backup files hold student names, photos and writing. Never commit them.
+*.json
