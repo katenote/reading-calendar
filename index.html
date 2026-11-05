@@ -1,0 +1,1179 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>우리 반 독서 캘린더</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&family=Nanum+Pen+Script&display=swap">
+<style>
+/* Layout: a classroom wall calendar in calm pastels. Book covers become soft stickers on its dates. Single light look by choice. */
+:root {
+  --wall: #e9eff1;
+  --wall-dot: #dfe7ea;
+  --paper: #fdfcf9;
+  --paper-2: #f3f2ec;
+  --ink: #39435a;
+  --muted: #6b7386;
+  --faint: #9aa2b1;
+  --line: #e3e4de;
+  --edge: #c3ccd5;
+  --primary: #587a8f;
+  --primary-deep: #486879;
+  --tomato: #587a8f;
+  --tomato-deep: #a8574f;
+  --sea: #4f7399;
+  --leaf: #4f7f66;
+  --leaf-soft: #e4efe8;
+  --star: #ecd38a;
+  --s-sun: #f6e9b8;
+  --s-mint: #cfe8da;
+  --s-pink: #f3d6dc;
+  --s-sky: #d3e4f2;
+  --s-peach: #f5dfcb;
+  --s-lilac: #e2daf0;
+  --font-display: "Jua", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+  --font-body: "Gowun Dodum", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+  --font-hand: "Nanum Pen Script", "Gowun Dodum", cursive;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  min-height: 100vh;
+  background-color: var(--wall);
+  background-image: radial-gradient(var(--wall-dot) 2px, transparent 2.5px);
+  background-size: 22px 22px;
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 18px;
+  line-height: 1.55;
+  padding: max(12px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(32px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+}
+button, input, textarea { font: inherit; color: inherit; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 400; line-height: 1.25; margin: 0; text-wrap: balance; }
+h1 { font-size: clamp(1.7rem, 5vw, 2.4rem); }
+h2 { font-size: 1.4rem; }
+p { margin: 0; }
+img { max-width: 100%; display: block; }
+:focus-visible { outline: 3px solid var(--sea); outline-offset: 2px; }
+h1:focus { outline: none; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+#app { max-width: 880px; margin: 0 auto; display: grid; gap: 16px; }
+.bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.stack { display: grid; gap: 14px; }
+.stack > *, .row > * { min-width: 0; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  min-height: 48px; padding: 8px 18px;
+  background: var(--paper); border: 2px solid var(--edge); border-radius: 14px;
+  box-shadow: 0 2px 0 var(--edge);
+  font-family: var(--font-display); font-size: 1.05rem;
+  cursor: pointer; text-decoration: none; color: var(--ink);
+}
+.btn:hover { background: var(--paper-2); }
+.btn:active { transform: translateY(2px); box-shadow: 0 0 0 var(--edge); }
+.btn[disabled] { opacity: .45; cursor: not-allowed; }
+.btn.primary { background: var(--primary); border-color: var(--primary-deep); color: #fff; }
+.btn.primary:hover { background: var(--primary-deep); }
+.btn.quiet { background: transparent; border-color: transparent; box-shadow: none; text-decoration: underline; font-family: var(--font-body); font-size: 1rem; padding: 8px; }
+.btn.quiet:hover { background: transparent; }
+.btn.danger { color: var(--tomato-deep); }
+.btn.wide { width: 100%; }
+
+/* The calendar sheet: paper with punched holes along the top */
+.sheet {
+  position: relative; background: var(--paper);
+  border: 2px solid var(--edge); border-radius: 18px;
+  box-shadow: 0 6px 18px rgba(57, 67, 90, .08);
+  padding: 22px clamp(12px, 3vw, 26px);
+}
+.sheet.hung { padding-top: 40px; }
+.sheet.hung::before {
+  content: ""; position: absolute; top: 12px; left: 8%; right: 8%; height: 14px;
+  background-image: radial-gradient(circle at 7px 7px, var(--edge) 6px, transparent 6.5px);
+  background-size: calc((100% - 14px) / 7) 14px; background-repeat: repeat-x;
+}
+
+.field { display: grid; gap: 6px; }
+.field > span, .label { font-family: var(--font-display); font-size: 1.05rem; }
+.field small { color: var(--muted); font-size: .9rem; }
+input[type=text], input[type=password], input[type=date], textarea {
+  width: 100%; min-height: 50px; padding: 10px 12px;
+  background: #fff; border: 2px solid var(--edge); border-radius: 12px;
+}
+textarea {
+  min-height: 240px; resize: vertical;
+  font-family: var(--font-hand); font-size: 1.65rem; line-height: 1.45;
+  background-image: repeating-linear-gradient(#fff 0 calc(1.45em - 1px), var(--line) calc(1.45em - 1px) 1.45em);
+  background-attachment: local;
+}
+.error { color: var(--tomato-deep); font-weight: 700; }
+
+/* Who is reading */
+.title-sign { text-align: center; padding: 18px 0 4px; }
+.subtitle { font-family: var(--font-display); font-size: 1.25rem; color: var(--muted); }
+.teacher-link { justify-self: center; background: none; border: 0; padding: 12px; min-height: 44px; color: var(--faint); font-size: .9rem; cursor: pointer; }
+.teacher-link:hover { color: var(--muted); text-decoration: underline; }
+.code-box { font-family: Consolas, "Courier New", monospace; font-size: 1.5rem; letter-spacing: .12em; text-align: center; background: var(--paper-2); border-radius: 12px; padding: 12px; user-select: all; overflow-wrap: anywhere; }
+.title-sign h1 { font-size: clamp(2.3rem, 9vw, 3.8rem); }
+.kids { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+.kid { min-height: 92px; font-size: 1.3rem; flex-direction: column; overflow-wrap: anywhere; }
+.kid small { font-family: var(--font-body); font-size: .9rem; color: var(--muted); }
+
+/* Calendar */
+.month-nav { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center; text-align: center; }
+.month-nav h2 { font-size: clamp(1.5rem, 5vw, 2.1rem); }
+.icon-btn { width: 48px; padding: 0; font-size: 1.4rem; }
+.cal { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: clamp(2px, 1vw, 8px); }
+.dow { text-align: center; font-family: var(--font-display); padding-bottom: 2px; }
+.dow.sun { color: var(--tomato-deep); }
+.dow.sat { color: var(--sea); }
+.cell {
+  position: relative; aspect-ratio: 3 / 4; min-width: 0; padding: 0;
+  background: #fff; border: 1.5px solid var(--line); border-radius: 10px;
+  cursor: pointer; overflow: visible;
+}
+.cell:hover:not([disabled]) { background: var(--paper-2); border-color: var(--ink); }
+.cell[disabled] { background: transparent; border-style: dashed; cursor: default; }
+.cell.blank { visibility: hidden; }
+.cell .num {
+  position: absolute; top: 2px; left: 5px; z-index: 2;
+  font-family: var(--font-display); font-size: clamp(.8rem, 2.4vw, 1.05rem); line-height: 1.2;
+}
+.cell.sun .num { color: var(--tomato-deep); }
+.cell.sat .num { color: var(--sea); }
+.cell[disabled] .num { opacity: .4; }
+.cell.today { border: 3px solid var(--tomato); }
+.cell.has .num { background: var(--paper); border-radius: 6px; padding: 0 4px; left: 2px; top: 1px; box-shadow: 0 0 0 1px var(--line); }
+.cell .sticker { position: absolute; inset: 8% 7% 6%; }
+.cell .more {
+  position: absolute; right: -2px; bottom: -2px; z-index: 3;
+  min-width: 24px; padding: 0 5px; border-radius: 12px;
+  background: var(--ink); color: #fff; font-family: var(--font-display); font-size: .82rem; line-height: 1.5;
+}
+.cell .pending {
+  position: absolute; inset: 22% 14% 10%; border: 2px dashed var(--muted); border-radius: 6px;
+  display: grid; place-items: center; font-size: clamp(.62rem, 1.9vw, .85rem); color: var(--muted); line-height: 1.2;
+}
+
+/* The sticker: a white die-cut edge, a soft lift, a small tilt */
+.sticker {
+  display: block; background: #fff; padding: clamp(2px, .6vw, 5px); border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(31, 42, 68, .4);
+  transform: rotate(var(--r, 0deg));
+}
+.sticker .face {
+  width: 100%; height: 100%; border-radius: 5px; overflow: hidden;
+  display: flex; align-items: center; justify-content: center; text-align: center;
+  font-family: var(--font-display); line-height: 1.15; padding: 3px; overflow-wrap: anywhere;
+  font-size: clamp(.55rem, 1.7vw, .9rem);
+}
+.sticker img { width: 100%; height: 100%; object-fit: cover; border-radius: 5px; }
+.sticker.big { width: min(210px, 62vw); aspect-ratio: 3 / 4; padding: 8px; border-radius: 12px; }
+.sticker.big .face { font-size: 1.4rem; padding: 10px; }
+
+.tally { display: flex; flex-wrap: wrap; gap: 8px 22px; font-family: var(--font-display); font-size: 1.1rem; }
+.tally b { font-weight: 400; color: var(--tomato-deep); font-size: 1.35em; font-variant-numeric: tabular-nums; }
+.progress { height: 18px; background: #fff; border: 2px solid var(--edge); border-radius: 10px; overflow: hidden; }
+.progress i { display: block; height: 100%; background: #8db8a0; }
+
+/* Book page */
+.book-top { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 20px; align-items: start; }
+.book-top h1 { overflow-wrap: anywhere; }
+.notice { background: var(--paper-2); border-radius: 12px; padding: 10px 14px; }
+.notice.ok { background: var(--leaf-soft); }
+.acts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.act { min-height: 118px; flex-direction: column; align-items: flex-start; text-align: left; padding: 14px; font-size: 1.2rem; gap: 4px; }
+.act small { font-family: var(--font-body); font-size: .92rem; color: var(--muted); font-weight: 400; }
+.act .state { font-family: var(--font-body); font-size: .9rem; font-weight: 700; color: var(--muted); }
+.act.done { background: var(--leaf-soft); }
+.act.done .state { color: var(--leaf); }
+
+/* Activities */
+.stars { display: flex; gap: 4px; flex-wrap: wrap; }
+.star { width: 56px; height: 56px; background: none; border: 0; padding: 0; cursor: pointer; font-size: 2.8rem; line-height: 1; color: var(--line); -webkit-text-stroke: 1.5px var(--edge); }
+.star.on { color: var(--star); }
+.moods { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.mood { flex-direction: column; min-height: 88px; font-family: var(--font-body); font-size: 1rem; }
+.mood span { font-size: 1.9rem; line-height: 1.1; }
+.mood[aria-pressed=true] { background: var(--s-sun); border-width: 3px; }
+.tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.swatch { width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--edge); cursor: pointer; padding: 0; }
+.swatch[aria-pressed=true] { box-shadow: 0 0 0 3px var(--paper), 0 0 0 6px var(--muted); }
+.size { min-height: 44px; width: 48px; padding: 0; }
+.size i { display: block; background: var(--ink); border-radius: 50%; }
+.size[aria-pressed=true], .tool[aria-pressed=true] { background: var(--s-sun); }
+.tool { min-height: 44px; padding: 4px 12px; font-size: .98rem; }
+canvas { display: block; width: 100%; aspect-ratio: 4 / 3; background: #fff; border: 2px solid var(--edge); border-radius: 12px; touch-action: none; cursor: crosshair; }
+
+/* Sticker form */
+.pick { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 16px; align-items: center; }
+.pick .preview { width: 120px; aspect-ratio: 3 / 4; }
+.pick .preview .sticker.big { width: 100%; }
+.colors { display: flex; flex-wrap: wrap; gap: 8px; }
+.file { position: relative; }
+.file input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
+.file:focus-within { outline: 3px solid var(--sea); outline-offset: 2px; border-radius: 14px; }
+
+/* Collection */
+.collection { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 16px 12px; }
+.col-item { background: none; border: 0; padding: 0; cursor: pointer; display: grid; gap: 6px; min-width: 0; text-align: center; }
+.col-item .sticker { aspect-ratio: 3 / 4; }
+.col-item .sticker .face { font-size: .85rem; }
+.col-item small { font-size: .85rem; color: var(--muted); }
+.badges { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.badge { display: grid; justify-items: center; gap: 2px; text-align: center; padding: 14px 8px; border: 2px dashed var(--muted); border-radius: 14px; color: var(--muted); }
+.badge .medal { width: 62px; height: 62px; border-radius: 50%; display: grid; place-items: center; background: var(--line); color: var(--paper); font-family: var(--font-display); font-size: 1.4rem; }
+.badge strong { font-family: var(--font-display); font-weight: 400; font-size: 1.05rem; }
+.badge.got { border: 2px solid var(--edge); background: var(--s-sun); color: var(--ink); }
+.badge.got .medal { background: var(--tomato); color: #fff; box-shadow: 0 0 0 4px #fff, 0 0 0 6px var(--edge); }
+
+.list { display: grid; gap: 10px; }
+.list-item { justify-content: flex-start; text-align: left; gap: 12px; padding: 8px 14px 8px 10px; }
+.list-item .sticker { width: 52px; aspect-ratio: 3 / 4; flex: none; padding: 2px; }
+.list-item .sticker .face { font-size: .55rem; }
+.list-item .t { min-width: 0; overflow-wrap: anywhere; display: grid; }
+.list-item small { font-family: var(--font-body); font-size: .9rem; color: var(--muted); }
+
+/* Celebration */
+.party { position: relative; text-align: center; overflow: hidden; display: grid; gap: 16px; justify-items: center; }
+.party .sticker { animation: stamp .55s cubic-bezier(.2, 1.4, .4, 1) both; }
+@keyframes stamp { from { transform: scale(2.2) rotate(-14deg); opacity: 0; } to { transform: rotate(var(--r, 0deg)); opacity: 1; } }
+.confetti { position: absolute; inset: 0; pointer-events: none; }
+.confetti i { position: absolute; top: -14px; width: 10px; height: 14px; border-radius: 2px; opacity: 0; animation: fall 2.2s ease-in forwards; }
+@keyframes fall { 0% { opacity: 1; transform: translateY(0) rotate(0); } 100% { opacity: 0; transform: translateY(560px) rotate(540deg); } }
+.party .row { justify-content: center; position: relative; }
+
+#toast {
+  position: fixed; left: 50%; bottom: max(18px, env(safe-area-inset-bottom, 0px)); transform: translateX(-50%);
+  z-index: 20; max-width: calc(100vw - 32px); width: max-content;
+  background: var(--ink); color: #fff; padding: 10px 18px; border-radius: 12px;
+}
+.warn { background: var(--paper); border: 2px solid var(--tomato-deep); color: var(--tomato-deep); border-radius: 12px; padding: 10px 14px; font-weight: 700; }
+
+@media (max-width: 560px) {
+  body { font-size: 17px; }
+  .sheet { padding-inline: 8px; box-shadow: 0 4px 12px rgba(57, 67, 90, .08); }
+  .stack.pad, .pad { padding-inline: 6px; }
+  .book-top { grid-template-columns: minmax(0, 1fr); justify-items: center; text-align: center; }
+  .book-top .row { justify-content: center; }
+  .acts { grid-template-columns: minmax(0, 1fr); }
+  .act { min-height: 0; }
+  .cal { gap: 3px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .party .sticker { animation: none; }
+  .confetti { display: none; }
+  .btn:active { transform: none; }
+}
+</style>
+</head>
+<body>
+<main id="app" aria-live="off"></main>
+<div id="toast" role="status" hidden></div>
+
+<script>
+'use strict';
+/* ---------- constants ---------- */
+const COLORS = ['sun', 'mint', 'pink', 'sky', 'peach', 'lilac'];
+const COLOR_NAMES = { sun: '노랑', mint: '민트', pink: '분홍', sky: '하늘', peach: '살구', lilac: '보라' };
+const BADGES = [
+  { n: 5, name: '새싹 독서가' },
+  { n: 10, name: '이야기 친구' },
+  { n: 20, name: '그림책 탐험가' },
+  { n: 30, name: '책나라 대장' },
+];
+const KINDS = ['feeling', 'drawing', 'letter', 'sequel'];
+const ACT_INFO = {
+  feeling: { title: '별점과 기분', hint: '이 책은 별 몇 개인가요?' },
+  drawing: { title: '좋았던 장면 그리기', hint: '제일 좋았던 장면을 그려요.' },
+  letter: { title: '등장인물에게 편지', hint: '책 속 친구에게 말을 걸어요.' },
+  sequel: { title: '뒷이야기 쓰기', hint: '그다음엔 어떻게 될까요?' },
+};
+const MOODS = [
+  ['😄', '재미있어요'], ['🥰', '따뜻해요'], ['😮', '놀라워요'],
+  ['😢', '슬퍼요'], ['🤔', '궁금해요'], ['😨', '무서워요'],
+];
+const PENS = ['#1f2a44', '#d9432c', '#f28c1e', '#f2c81e', '#2a8a56', '#1f6fc2', '#7a4fc2', '#e86aa0', '#8a5a33'];
+
+/* ---------- small helpers ---------- */
+const root = document.getElementById('app');
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+const pad = n => String(n).padStart(2, '0');
+/* Local date, never toISOString: that is UTC and shows yesterday in Korea before 9am. */
+const ymd = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+const todayStr = () => ymd(new Date());
+const prettyDate = s => { const [, m, d] = s.split('-').map(Number); return m + '월 ' + d + '일'; };
+function hashTilt(id) {
+  let h = 0;
+  for (const c of String(id)) h = (h * 31 + c.charCodeAt(0)) | 0;
+  return (Math.abs(h) % 13) - 6;
+}
+function emptyActivities() {
+  return {
+    feeling: { done: false, stars: 0, mood: '' },
+    drawing: { done: false, image: '' },
+    letter: { done: false, to: '', text: '' },
+    sequel: { done: false, text: '' },
+  };
+}
+const hasSticker = b => KINDS.some(k => b.activities[k].done);
+
+/* ---------- storage: IndexedDB, with an in-memory fallback and a visible warning ---------- */
+const db = { conn: null, ok: true };
+function openDb() {
+  return new Promise(resolve => {
+    let req;
+    try { req = indexedDB.open('book-calendar', 2); } catch (e) { db.ok = false; return resolve(); }
+    req.onupgradeneeded = () => {
+      const d = req.result;
+      for (const name of ['kids', 'books', 'settings']) {
+        if (!d.objectStoreNames.contains(name)) d.createObjectStore(name, { keyPath: 'id' });
+      }
+    };
+    req.onsuccess = () => { db.conn = req.result; resolve(); };
+    req.onerror = () => { db.ok = false; resolve(); };
+    req.onblocked = () => { db.ok = false; resolve(); };
+  });
+}
+function readAll(store) {
+  return new Promise(resolve => {
+    if (!db.conn) return resolve([]);
+    const r = db.conn.transaction(store).objectStore(store).getAll();
+    r.onsuccess = () => resolve(r.result || []);
+    r.onerror = () => resolve([]);
+  });
+}
+function write(store, fn) {
+  if (!db.conn) return;
+  try {
+    const tx = db.conn.transaction(store, 'readwrite');
+    fn(tx.objectStore(store));
+    tx.onabort = tx.onerror = () => toast('저장하지 못했어요. 기기 저장 공간을 확인해 주세요.');
+  } catch (e) { toast('저장하지 못했어요. 기기 저장 공간을 확인해 주세요.'); }
+}
+const putKid = k => write('kids', s => s.put(k));
+const putBook = b => write('books', s => s.put(b));
+
+/* ---------- state ---------- */
+/* Teacher lock: keeps students out of the teacher menu on a shared device.
+   It is not encryption. The records stay readable to anyone with access to the browser's data. */
+const settings = { teacher: null };
+function randomHex(bytes) {
+  const a = crypto.getRandomValues(new Uint8Array(bytes));
+  return Array.from(a, x => x.toString(16).padStart(2, '0')).join('');
+}
+async function hashSecret(secret, salt) {
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey('raw', enc.encode(secret), 'PBKDF2', false, ['deriveBits']);
+  const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt: enc.encode(salt), iterations: 150000 }, key, 256);
+  return Array.from(new Uint8Array(bits), x => x.toString(16).padStart(2, '0')).join('');
+}
+/* With no code given, the existing recovery code stays valid. */
+async function storeSecrets(password, code) {
+  const salt = randomHex(16);
+  const prev = settings.teacher;
+  const t = {
+    id: 'teacher', salt, passHash: await hashSecret(password, salt),
+    codeSalt: code ? salt : prev.codeSalt,
+    codeHash: code ? await hashSecret(code, salt) : prev.codeHash,
+  };
+  settings.teacher = t;
+  write('settings', s => s.put(t));
+}
+const fieldVal = id => document.getElementById(id).value;
+function checkNewPassword() {
+  const a = fieldVal('tp-new'), b = fieldVal('tp-again');
+  if (a.length < 4) return '비밀번호를 4자 이상 적어 주세요.';
+  if (a !== b) return '두 비밀번호가 서로 달라요.';
+  return '';
+}
+function teacherFail(msg) { state.error = msg; render(); }
+async function teacherSetup() {
+  if (settings.teacher) return;
+  const bad = checkNewPassword();
+  if (bad) return teacherFail(bad);
+  const code = randomHex(4).toUpperCase();
+  await storeSecrets(fieldVal('tp-new'), code);
+  go('teacher', { recoveryCode: code, teacherOpen: true });
+}
+async function teacherLogin() {
+  const t = settings.teacher;
+  if (t && await hashSecret(fieldVal('tp-pass'), t.salt) === t.passHash) go('teacher', { teacherOpen: true });
+  else teacherFail('비밀번호가 맞지 않아요.');
+}
+async function teacherRecover() {
+  const t = settings.teacher;
+  const code = fieldVal('tp-code').trim().toUpperCase();
+  if (!t || await hashSecret(code, t.codeSalt) !== t.codeHash) return teacherFail('복구 코드가 맞지 않아요.');
+  const bad = checkNewPassword();
+  if (bad) return teacherFail(bad);
+  await storeSecrets(fieldVal('tp-new'));
+  go('teacher', { teacherMode: 'login', teacherOpen: true });
+  toast('새 비밀번호를 저장했어요.');
+}
+
+const now = new Date();
+const state = {
+  kids: [], books: [],
+  view: 'who', kidId: null,
+  year: now.getFullYear(), month: now.getMonth(),
+  date: null, bookId: null, kind: null,
+  bookBack: 'calendar',
+  form: null, confirm: null, error: '', party: null,
+  teacherOpen: false, teacherMode: 'login', recoveryCode: '',
+};
+let leaveHook = null;
+
+const kid = () => state.kids.find(k => k.id === state.kidId);
+const book = () => state.books.find(b => b.id === state.bookId);
+const myBooks = () => state.books.filter(b => b.kidId === state.kidId);
+const stickerCount = id => state.books.filter(b => b.kidId === id && hasSticker(b)).length;
+
+function go(view, params) {
+  if (leaveHook) { const h = leaveHook; leaveHook = null; h(); }
+  Object.assign(state, { view, confirm: null, error: '' }, params || {});
+  if (view !== 'teacher') Object.assign(state, { teacherOpen: false, teacherMode: 'login', recoveryCode: '' });
+  render();
+  window.scrollTo(0, 0);
+  const h = root.querySelector('h1');
+  if (h) { h.setAttribute('tabindex', '-1'); h.focus({ preventScroll: true }); }
+}
+
+let toastTimer;
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.hidden = true; }, 3200);
+}
+
+/* ---------- shared pieces ---------- */
+function stickerHtml(b, extra) {
+  const r = hashTilt(b.id);
+  const face = b.cover
+    ? `<img src="${esc(b.cover)}" alt="">`
+    : `<span class="face" style="background:var(--s-${esc(COLORS.includes(b.color) ? b.color : 'sun')})">${esc(b.title)}</span>`;
+  return `<span class="sticker ${extra || ''}" style="--r:${r}deg">${face}</span>`;
+}
+const backBtn = (act, label) => `<button class="btn" data-act="${act}"><span aria-hidden="true">←</span> ${esc(label)}</button>`;
+
+/* ---------- views ---------- */
+function viewWho() {
+  const warn = db.ok ? '' : `<p class="warn">이 브라우저에서는 기록을 저장할 수 없어요. 창을 닫으면 사라져요. 시크릿 창이라면 일반 창으로 열어 주세요.</p>`;
+  const kids = state.kids.map(k => {
+    const n = stickerCount(k.id);
+    return `<button class="btn kid" data-act="pickKid" data-id="${esc(k.id)}">${esc(k.name)}<small>스티커 ${n}개</small></button>`;
+  }).join('');
+  return `
+    <header class="title-sign"><h1>우리 반 독서 캘린더</h1><p class="subtitle">꾸준히 함께 읽어요</p></header>
+    ${warn}
+    <section class="sheet hung stack">
+      <h2>${state.kids.length ? '누가 읽었나요?' : '이름을 알려 주세요'}</h2>
+      ${kids ? `<div class="kids">${kids}</div>` : ''}
+      <form data-form="addKid" class="stack">
+        <label class="field"><span>${state.kids.length ? '새 친구 이름' : '내 이름'}</span>
+          <input id="kid-name" type="text" maxlength="12" autocomplete="off" required></label>
+        ${state.error ? `<p class="error">${esc(state.error)}</p>` : ''}
+        <button class="btn primary">내 달력 만들기</button>
+      </form>
+    </section>
+    <button class="teacher-link" data-act="toTeacher">교사용</button>`;
+}
+
+function viewTeacher() {
+  const back = backBtn('toWho', '처음으로');
+  const err = state.error ? `<p class="error">${esc(state.error)}</p>` : '';
+  if (state.recoveryCode) {
+    return `<div class="bar">${back}</div><section class="sheet stack">
+      <h1>복구 코드를 적어 두세요</h1>
+      <p>비밀번호를 잊으면 이 코드로 새 비밀번호를 만들 수 있어요. 이 화면을 벗어나면 다시 볼 수 없으니 학생이 보지 못하는 곳에 적어 두세요.</p>
+      <p class="code-box">${esc(state.recoveryCode)}</p>
+      <button class="btn primary" data-act="codeSaved">적어 두었어요</button></section>`;
+  }
+  if (!settings.teacher) {
+    return `<div class="bar">${back}</div><form class="sheet stack" data-form="teacherSetup" novalidate>
+      <h1>교사용 비밀번호 만들기</h1>
+      <p>기록 내보내기, 불러오기, 학생 삭제는 비밀번호를 아는 교사만 할 수 있어요.</p>
+      <label class="field"><span>새 비밀번호 <small>(4자 이상)</small></span><input id="tp-new" type="password" autocomplete="new-password"></label>
+      <label class="field"><span>한 번 더 입력</span><input id="tp-again" type="password" autocomplete="new-password"></label>
+      ${err}<button class="btn primary">비밀번호 만들기</button></form>`;
+  }
+  if (state.teacherMode === 'recover') {
+    return `<div class="bar">${back}</div><form class="sheet stack" data-form="teacherRecover" novalidate>
+      <h1>새 비밀번호 만들기</h1>
+      <label class="field"><span>복구 코드</span><input id="tp-code" type="text" autocomplete="off"></label>
+      <label class="field"><span>새 비밀번호 <small>(4자 이상)</small></span><input id="tp-new" type="password" autocomplete="new-password"></label>
+      <label class="field"><span>한 번 더 입력</span><input id="tp-again" type="password" autocomplete="new-password"></label>
+      ${err}<button class="btn primary">새 비밀번호 저장</button>
+      <button type="button" class="btn quiet" data-act="teacherLogin">비밀번호 입력으로 돌아가기</button></form>`;
+  }
+  if (!state.teacherOpen) {
+    return `<div class="bar">${back}</div><form class="sheet stack" data-form="teacherLogin" novalidate>
+      <h1>교사용</h1>
+      <label class="field"><span>비밀번호</span><input id="tp-pass" type="password" autocomplete="current-password"></label>
+      ${err}<button class="btn primary">들어가기</button>
+      <button type="button" class="btn quiet" data-act="teacherForgot">비밀번호를 잊었어요</button></form>`;
+  }
+  const manage = state.kids.map(k => state.confirm === 'kid:' + k.id
+    ? `<div class="row"><span class="error">${esc(k.name)}의 달력과 기록을 모두 지울까요? 되돌릴 수 없어요.</span>
+        <button class="btn danger" data-act="deleteKid" data-id="${esc(k.id)}">네, 지워요</button>
+        <button class="btn" data-act="cancelConfirm">아니요</button></div>`
+    : `<div class="row"><span>${esc(k.name)} (스티커 ${stickerCount(k.id)}개)</span><button class="btn quiet danger" data-act="askDeleteKid" data-id="${esc(k.id)}">지우기</button></div>`).join('');
+  return `<div class="bar">${back}</div><section class="sheet stack">
+    <h1>교사용: 기록 옮기기와 관리</h1>
+    <p>기록은 이 기기의 브라우저에만 저장돼요. 브라우저 기록을 지우거나 기기를 바꾸기 전에 파일로 내보내 두세요.</p>
+    <div class="row">
+      <button class="btn" data-act="exportAll">파일로 내보내기</button>
+      <label class="btn file">파일 불러오기<input id="import-file" type="file" accept=".json,application/json"></label>
+    </div>
+    ${manage ? `<h2>학생 관리</h2><div class="stack">${manage}</div>` : ''}</section>`;
+}
+
+function nextBadge(n) { return BADGES.find(b => b.n > n); }
+
+function viewCalendar() {
+  const k = kid();
+  const y = state.year, m = state.month;
+  const prefix = y + '-' + pad(m + 1) + '-';
+  const mine = myBooks();
+  const monthCount = mine.filter(b => hasSticker(b) && b.date.startsWith(prefix)).length;
+  const total = mine.filter(hasSticker).length;
+  const first = new Date(y, m, 1).getDay();
+  const days = new Date(y, m + 1, 0).getDate();
+  const today = todayStr();
+  const t = new Date();
+  const isCurrent = y === t.getFullYear() && m === t.getMonth();
+
+  let cells = '';
+  for (let i = 0; i < first; i++) cells += `<div class="cell blank" aria-hidden="true"></div>`;
+  for (let d = 1; d <= days; d++) {
+    const ds = prefix + pad(d);
+    const list = mine.filter(b => b.date === ds);
+    const done = list.filter(hasSticker);
+    const wd = new Date(y, m, d).getDay();
+    const future = ds > today;
+    let inner = '';
+    if (done.length) inner = stickerHtml(done[done.length - 1]);
+    else if (list.length) inner = `<span class="pending">활동<br>하기</span>`;
+    if (list.length > 1) inner += `<span class="more">${list.length}권</span>`;
+    const label = `${m + 1}월 ${d}일` + (ds === today ? ', 오늘' : '') + (list.length ? `, 책 ${list.length}권` : '');
+    cells += `<button class="cell ${wd === 0 ? 'sun' : wd === 6 ? 'sat' : ''} ${ds === today ? 'today' : ''} ${done.length ? 'has' : ''}"
+      data-act="day" data-date="${ds}" aria-label="${label}" ${future ? 'disabled' : ''}><span class="num" aria-hidden="true">${d}</span>${inner}</button>`;
+  }
+  const next = nextBadge(total);
+  const prev = BADGES.filter(b => b.n <= total).pop();
+  const from = prev ? prev.n : 0;
+  const progress = next
+    ? `<div class="stack" style="gap:6px"><p>${esc(next.name)} 배지까지 <b>${next.n - total}권</b> 남았어요</p>
+        <div class="progress" role="img" aria-label="${next.n}권 중 ${total}권"><i style="width:${Math.round((total - from) / (next.n - from) * 100)}%"></i></div></div>`
+    : `<p>배지를 모두 모았어요! 정말 멋져요.</p>`;
+
+  return `
+    <div class="bar">
+      <h1>${esc(k.name)}의 독서 캘린더</h1>
+      <div class="row">
+        <button class="btn" data-act="toCollection">스티커 모음</button>
+        <button class="btn quiet" data-act="toWho">다른 친구</button>
+      </div>
+    </div>
+    <section class="sheet hung stack">
+      <div class="month-nav">
+        <button class="btn icon-btn" data-act="prevMonth" aria-label="지난달">‹</button>
+        <h2>${y}년 ${m + 1}월</h2>
+        <button class="btn icon-btn" data-act="nextMonth" aria-label="다음 달" ${isCurrent ? 'disabled' : ''}>›</button>
+      </div>
+      <div class="cal">
+        ${['일', '월', '화', '수', '목', '금', '토'].map((n, i) => `<div class="dow ${i === 0 ? 'sun' : i === 6 ? 'sat' : ''}" aria-hidden="true">${n}</div>`).join('')}
+        ${cells}
+      </div>
+      <div class="tally"><span>이번 달 <b>${monthCount}</b>권</span><span>지금까지 <b>${total}</b>권</span></div>
+      ${progress}
+      <div class="row">
+        <button class="btn primary" data-act="newToday">오늘 읽은 책 붙이기</button>
+        ${isCurrent ? '' : `<button class="btn" data-act="thisMonth">이번 달로 가기</button>`}
+      </div>
+    </section>`;
+}
+
+function viewDay() {
+  const list = myBooks().filter(b => b.date === state.date);
+  const items = list.map(b => `
+    <button class="btn list-item" data-act="openBook" data-id="${esc(b.id)}">
+      ${stickerHtml(b)}
+      <span class="t">${esc(b.title)}<small>${hasSticker(b) ? '스티커를 붙였어요' : '활동을 하면 스티커가 붙어요'}</small></span>
+    </button>`).join('');
+  return `
+    <div class="bar">${backBtn('toCalendar', '달력')}</div>
+    <section class="sheet stack">
+      <h1>${prettyDate(state.date)}에 읽은 책</h1>
+      <div class="list">${items}</div>
+      <button class="btn primary" data-act="newOnDay">다른 책 더 붙이기</button>
+    </section>`;
+}
+
+function viewForm() {
+  const f = state.form;
+  const editing = !!f.id;
+  const previewBook = { id: f.id || 'new', title: f.title || '내 책', cover: f.cover, color: f.color };
+  return `
+    <div class="bar">${backBtn(editing ? 'toBook' : 'toCalendar', editing ? '책으로' : '달력')}</div>
+    <form class="sheet stack" data-form="book" novalidate>
+      <h1>${editing ? '책 정보 고치기' : '어떤 책을 읽었나요?'}</h1>
+      <label class="field"><span>책 제목</span>
+        <input id="book-title" type="text" maxlength="40" autocomplete="off" value="${esc(f.title)}"></label>
+      <label class="field"><span>글쓴이 <small>(몰라도 괜찮아요)</small></span>
+        <input id="book-author" type="text" maxlength="30" autocomplete="off" value="${esc(f.author)}"></label>
+      <label class="field"><span>읽은 날</span>
+        <input id="book-date" type="date" max="${todayStr()}" value="${esc(f.date)}"></label>
+      <div class="stack">
+        <span class="label">표지 스티커</span>
+        <div class="pick">
+          <div class="preview" id="preview">${stickerHtml(previewBook, 'big')}</div>
+          <div class="stack">
+            <label class="btn file">표지 사진 올리기<input id="book-cover" type="file" accept="image/*"></label>
+            <button type="button" class="btn quiet" id="cover-clear" ${f.cover ? '' : 'hidden'}>사진 빼기</button>
+            <small>사진이 없으면 색깔 스티커에 제목이 들어가요.</small>
+            <div class="colors" role="group" aria-label="스티커 색깔">
+              ${COLORS.map(c => `<button type="button" class="swatch" data-color="${c}" style="background:var(--s-${c})" aria-label="${COLOR_NAMES[c]}" aria-pressed="${f.color === c}"></button>`).join('')}
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="error" id="form-error" ${state.error ? '' : 'hidden'}>${esc(state.error)}</p>
+      <button class="btn primary">${editing ? '고친 내용 저장' : '다음: 독후활동 하러 가기'}</button>
+    </form>`;
+}
+
+function viewBook() {
+  const b = book();
+  const stuck = hasSticker(b);
+  const confirm = state.confirm === 'book'
+    ? `<div class="row"><span class="error">이 책과 활동을 모두 지울까요? 되돌릴 수 없어요.</span>
+        <button class="btn danger" data-act="deleteBook">네, 지워요</button>
+        <button class="btn" data-act="cancelConfirm">아니요</button></div>`
+    : `<div class="row"><button class="btn quiet" data-act="editBook">책 정보 고치기</button>
+        <button class="btn quiet danger" data-act="askDeleteBook">책 지우기</button></div>`;
+  return `
+    <div class="bar">${backBtn(state.bookBack === 'collection' ? 'toCollection' : 'toCalendar', state.bookBack === 'collection' ? '스티커 모음' : '달력')}</div>
+    <section class="sheet stack">
+      <div class="book-top">
+        ${stickerHtml(b, 'big')}
+        <div class="stack">
+          <h1>${esc(b.title)}</h1>
+          <p>${b.author ? esc(b.author) + ' · ' : ''}${prettyDate(b.date)}에 읽었어요</p>
+          <p class="notice ${stuck ? 'ok' : ''}">${stuck ? '달력에 스티커를 붙였어요. 다른 활동도 해 볼까요?' : '활동을 하나만 끝내도 달력에 스티커가 붙어요.'}</p>
+        </div>
+      </div>
+      <h2>독후활동</h2>
+      <div class="acts">
+        ${KINDS.map(k => {
+          const done = b.activities[k].done;
+          return `<button class="btn act ${done ? 'done' : ''}" data-act="openActivity" data-kind="${k}">
+            ${ACT_INFO[k].title}<small>${ACT_INFO[k].hint}</small>
+            <span class="state">${done ? '✓ 끝냈어요 (다시 볼 수 있어요)' : '아직 안 했어요'}</span></button>`;
+        }).join('')}
+      </div>
+      ${confirm}
+    </section>`;
+}
+
+function viewActivity() {
+  const b = book(), k = state.kind, a = b.activities[k];
+  let body = '';
+  if (k === 'feeling') {
+    body = `
+      <div class="stack">
+        <span class="label" id="star-label">별을 몇 개 줄까요?</span>
+        <div class="stars" role="group" aria-labelledby="star-label">
+          ${[1, 2, 3, 4, 5].map(n => `<button type="button" class="star ${a.stars >= n ? 'on' : ''}" data-star="${n}" aria-label="별 ${n}개" aria-pressed="${a.stars === n}">★</button>`).join('')}
+        </div>
+      </div>
+      <div class="stack">
+        <span class="label" id="mood-label">읽고 나니 기분이 어때요?</span>
+        <div class="moods" role="group" aria-labelledby="mood-label">
+          ${MOODS.map(([e, t]) => `<button type="button" class="btn mood" data-mood="${t}" aria-pressed="${a.mood === t}"><span aria-hidden="true">${e}</span>${t}</button>`).join('')}
+        </div>
+      </div>`;
+  } else if (k === 'drawing') {
+    body = `
+      <p>책에서 제일 좋았던 장면을 그려 보세요.</p>
+      <div class="tools" role="group" aria-label="색깔">
+        ${PENS.map((c, i) => `<button type="button" class="swatch" data-pen="${c}" style="background:${c}" aria-label="색깔 ${i + 1}" aria-pressed="${i === 0}"></button>`).join('')}
+      </div>
+      <div class="tools">
+        ${[4, 10, 22].map((s, i) => `<button type="button" class="btn size" data-size="${s}" aria-label="${['가는', '중간', '굵은'][i]} 선" aria-pressed="${i === 1}"><i style="width:${Math.min(s, 20)}px;height:${Math.min(s, 20)}px"></i></button>`).join('')}
+        <button type="button" class="btn tool" id="eraser" aria-pressed="false">지우개</button>
+        <button type="button" class="btn tool" id="undo" aria-pressed="false" disabled>되돌리기</button>
+        <button type="button" class="btn tool" id="clear" aria-pressed="false">모두 지우기</button>
+      </div>
+      <canvas id="pad" width="1000" height="750" aria-label="그림판"></canvas>`;
+  } else if (k === 'letter') {
+    body = `
+      <label class="field"><span>누구에게 쓸까요?</span>
+        <input id="letter-to" type="text" maxlength="20" autocomplete="off" value="${esc(a.to)}"></label>
+      <label class="field"><span>편지</span><small>이렇게 시작해 봐요: "네가 그렇게 했을 때 나는…"</small>
+        <textarea id="act-text" maxlength="2000">${esc(a.text)}</textarea></label>`;
+  } else {
+    body = `
+      <label class="field"><span>책이 끝난 다음 날, 무슨 일이 생길까요?</span>
+        <small>정답은 없어요. 내 마음대로 이어 써 봐요.</small>
+        <textarea id="act-text" maxlength="2000">${esc(a.text)}</textarea></label>`;
+  }
+  return `
+    <div class="bar">${backBtn('toBook', '책으로')}</div>
+    <section class="sheet stack">
+      <h1>${ACT_INFO[k].title}</h1>
+      <p>${esc(b.title)}</p>
+      ${body}
+      <p class="notice" id="done-help" hidden></p>
+      <button class="btn primary" id="act-done" type="button">다 했어요</button>
+    </section>`;
+}
+
+function viewCollection() {
+  const list = myBooks().filter(hasSticker).sort((a, b) => b.date.localeCompare(a.date) || b.createdAt - a.createdAt);
+  const total = list.length;
+  return `
+    <div class="bar">${backBtn('toCalendar', '달력')}</div>
+    <section class="sheet stack">
+      <h1>${esc(kid().name)}의 스티커 모음</h1>
+      <p class="tally"><span>모은 스티커 <b>${total}</b>개</span></p>
+      ${total ? `<div class="collection">${list.map(b => `
+        <button class="col-item" data-act="openBook" data-id="${esc(b.id)}" data-from="collection">
+          ${stickerHtml(b)}<small>${prettyDate(b.date)}</small><span class="sr">${esc(b.title)}</span>
+        </button>`).join('')}</div>` : `<p class="notice">아직 스티커가 없어요. 책을 읽고 활동을 하나 끝내면 첫 스티커가 생겨요.</p>`}
+    </section>
+    <section class="sheet stack">
+      <h2>내 배지</h2>
+      <div class="badges">
+        ${BADGES.map(b => `<div class="badge ${total >= b.n ? 'got' : ''}">
+          <span class="medal">${b.n}</span><strong>${esc(b.name)}</strong><small>${total >= b.n ? '받았어요!' : b.n + '권을 읽으면 받아요'}</small></div>`).join('')}
+      </div>
+    </section>`;
+}
+
+function viewParty() {
+  const b = book(), p = state.party;
+  const colors = ['#f3d6dc', '#d3e4f2', '#cfe8da', '#f6e9b8', '#e2daf0'];
+  let bits = '';
+  for (let i = 0; i < 28; i++) {
+    bits += `<i style="left:${(i * 37) % 100}%;background:${colors[i % 5]};animation-delay:${(i % 9) * 0.09}s"></i>`;
+  }
+  return `
+    <section class="sheet party">
+      <div class="confetti" aria-hidden="true">${bits}</div>
+      <h1>스티커를 붙였어요!</h1>
+      ${stickerHtml(b, 'big')}
+      <p><b>${esc(b.title)}</b>까지, 지금까지 <b>${p.total}권</b>을 읽었어요.</p>
+      ${p.badge ? `<div class="badge got"><span class="medal">${p.badge.n}</span><strong>새 배지: ${esc(p.badge.name)}</strong></div>` : ''}
+      <div class="row">
+        <button class="btn primary" data-act="partyCalendar">달력 보기</button>
+        <button class="btn" data-act="toBook">활동 더 하기</button>
+      </div>
+    </section>`;
+}
+
+const VIEWS = { who: viewWho, teacher: viewTeacher, calendar: viewCalendar, day: viewDay, form: viewForm, book: viewBook, activity: viewActivity, collection: viewCollection, party: viewParty };
+
+function render() {
+  if (!['who', 'teacher'].includes(state.view) && !kid()) state.view = 'who';
+  if (['book', 'activity', 'party'].includes(state.view) && !book()) state.view = 'calendar';
+  root.innerHTML = VIEWS[state.view]();
+  if (state.view === 'form') bindForm();
+  if (state.view === 'activity') bindActivity();
+  if (state.view === 'teacher') bindTeacher();
+}
+
+/* ---------- actions (event delegation) ---------- */
+function openNew(date) {
+  state.form = { id: null, title: '', author: '', date, cover: '', color: COLORS[myBooks().length % COLORS.length] };
+  go('form');
+}
+const actions = {
+  pickKid: el => {
+    const t = new Date();
+    go('calendar', { kidId: el.dataset.id, year: t.getFullYear(), month: t.getMonth() });
+  },
+  toWho: () => go('who', { kidId: null }),
+  toTeacher: () => go('teacher'),
+  teacherForgot: () => go('teacher', { teacherMode: 'recover' }),
+  teacherLogin: () => go('teacher', { teacherMode: 'login' }),
+  codeSaved: () => go('teacher', { recoveryCode: '', teacherOpen: true }),
+  toCalendar: () => go('calendar'),
+  toCollection: () => go('collection'),
+  toBook: () => go('book'),
+  prevMonth: () => {
+    const d = new Date(state.year, state.month - 1, 1);
+    go('calendar', { year: d.getFullYear(), month: d.getMonth() });
+  },
+  nextMonth: () => {
+    const d = new Date(state.year, state.month + 1, 1);
+    go('calendar', { year: d.getFullYear(), month: d.getMonth() });
+  },
+  thisMonth: () => { const t = new Date(); go('calendar', { year: t.getFullYear(), month: t.getMonth() }); },
+  day: el => {
+    const date = el.dataset.date;
+    if (myBooks().some(b => b.date === date)) go('day', { date });
+    else openNew(date);
+  },
+  newToday: () => openNew(todayStr()),
+  newOnDay: () => openNew(state.date),
+  openBook: el => go('book', { bookId: el.dataset.id, bookBack: el.dataset.from || 'calendar' }),
+  editBook: () => {
+    const b = book();
+    state.form = { id: b.id, title: b.title, author: b.author, date: b.date, cover: b.cover, color: b.color };
+    go('form');
+  },
+  askDeleteBook: () => { state.confirm = 'book'; render(); },
+  cancelConfirm: () => { state.confirm = null; render(); },
+  deleteBook: () => {
+    const id = state.bookId;
+    state.books = state.books.filter(b => b.id !== id);
+    write('books', s => s.delete(id));
+    go(state.bookBack === 'collection' ? 'collection' : 'calendar', { bookId: null });
+    toast('책을 지웠어요.');
+  },
+  askDeleteKid: el => { state.confirm = 'kid:' + el.dataset.id; render(); },
+  deleteKid: el => {
+    if (!state.teacherOpen) return;
+    const id = el.dataset.id;
+    const gone = state.books.filter(b => b.kidId === id).map(b => b.id);
+    state.kids = state.kids.filter(k => k.id !== id);
+    state.books = state.books.filter(b => b.kidId !== id);
+    write('kids', s => s.delete(id));
+    write('books', s => gone.forEach(g => s.delete(g)));
+    state.confirm = null; render();
+  },
+  openActivity: el => go('activity', { kind: el.dataset.kind }),
+  partyCalendar: () => {
+    const [y, m] = book().date.split('-').map(Number);
+    go('calendar', { year: y, month: m - 1 });
+  },
+  exportAll: exportAll,
+};
+root.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]');
+  if (el && !el.disabled && actions[el.dataset.act]) actions[el.dataset.act](el);
+});
+root.addEventListener('submit', e => {
+  e.preventDefault();
+  const f = e.target.dataset.form;
+  if (f === 'addKid') submitKid();
+  if (f === 'teacherSetup') teacherSetup();
+  if (f === 'teacherLogin') teacherLogin();
+  if (f === 'teacherRecover') teacherRecover();
+  if (f === 'book') submitBook();
+});
+
+function submitKid() {
+  const name = document.getElementById('kid-name').value.trim();
+  if (!name) { state.error = '이름을 적어 주세요.'; render(); return; }
+  if (state.kids.some(k => k.name === name)) { state.error = '같은 이름이 벌써 있어요. 위에서 이름을 눌러 주세요.'; render(); return; }
+  const k = { id: uid(), name, createdAt: Date.now() };
+  state.kids.push(k);
+  putKid(k);
+  const t = new Date();
+  go('calendar', { kidId: k.id, year: t.getFullYear(), month: t.getMonth() });
+}
+
+/* ---------- book form ---------- */
+function refreshPreview() {
+  const f = state.form;
+  document.getElementById('preview').innerHTML = stickerHtml({ id: f.id || 'new', title: f.title || '내 책', cover: f.cover, color: f.color }, 'big');
+  document.getElementById('cover-clear').hidden = !f.cover;
+}
+function showFormError(msg) {
+  const el = document.getElementById('form-error');
+  el.textContent = msg; el.hidden = !msg;
+}
+function shrinkImage(file, maxSide) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const scale = Math.min(1, maxSide / Math.max(img.naturalWidth, img.naturalHeight));
+      const c = document.createElement('canvas');
+      c.width = Math.max(1, Math.round(img.naturalWidth * scale));
+      c.height = Math.max(1, Math.round(img.naturalHeight * scale));
+      const g = c.getContext('2d');
+      g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height);
+      g.drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url);
+      resolve(c.toDataURL('image/jpeg', 0.82));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('decode')); };
+    img.src = url;
+  });
+}
+function bindForm() {
+  const f = state.form;
+  document.getElementById('book-title').addEventListener('input', e => { f.title = e.target.value; if (!f.cover) refreshPreview(); });
+  document.getElementById('book-author').addEventListener('input', e => { f.author = e.target.value; });
+  document.getElementById('book-date').addEventListener('input', e => { f.date = e.target.value; });
+  document.getElementById('book-cover').addEventListener('change', async e => {
+    const file = e.target.files[0];
+    e.target.value = '';
+    if (!file) return;
+    showFormError('');
+    try {
+      f.cover = await shrinkImage(file, 520);
+      refreshPreview();
+    } catch (err) {
+      showFormError('이 사진은 열 수 없어요. 다른 사진을 골라 주세요.');
+    }
+  });
+  document.getElementById('cover-clear').addEventListener('click', () => { f.cover = ''; refreshPreview(); });
+  root.querySelectorAll('[data-color]').forEach(btn => btn.addEventListener('click', () => {
+    f.color = btn.dataset.color;
+    root.querySelectorAll('[data-color]').forEach(x => x.setAttribute('aria-pressed', x === btn));
+    if (!f.cover) refreshPreview();
+  }));
+}
+function submitBook() {
+  const f = state.form;
+  const title = f.title.trim();
+  if (!title) { showFormError('책 제목을 적어 주세요.'); document.getElementById('book-title').focus(); return; }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(f.date)) { showFormError('읽은 날을 골라 주세요.'); return; }
+  if (f.date > todayStr()) { showFormError('아직 오지 않은 날이에요. 오늘이나 지난 날을 골라 주세요.'); return; }
+  if (f.id) {
+    const b = state.books.find(x => x.id === f.id);
+    Object.assign(b, { title, author: f.author.trim(), date: f.date, cover: f.cover, color: f.color });
+    putBook(b);
+    go('book');
+  } else {
+    const b = { id: uid(), kidId: state.kidId, title, author: f.author.trim(), date: f.date, cover: f.cover, color: f.color, activities: emptyActivities(), createdAt: Date.now() };
+    state.books.push(b);
+    putBook(b);
+    go('book', { bookId: b.id, bookBack: 'calendar' });
+  }
+}
+
+/* ---------- activities ---------- */
+function finishActivity(ready) {
+  const b = book(), a = b.activities[state.kind];
+  const before = stickerCount(state.kidId);
+  const hadSticker = hasSticker(b);
+  if (!ready()) return;
+  a.done = true;
+  putBook(b);
+  if (!hadSticker) {
+    const total = stickerCount(state.kidId);
+    const badge = BADGES.find(x => before < x.n && total >= x.n) || null;
+    go('party', { party: { total, badge } });
+  } else {
+    go('book');
+    toast('저장했어요.');
+  }
+}
+function bindActivity() {
+  const b = book(), k = state.kind, a = b.activities[k];
+  const doneBtn = document.getElementById('act-done');
+  if (k === 'feeling') bindFeeling(a, doneBtn);
+  else if (k === 'drawing') bindDrawing(b, a, doneBtn);
+  else bindText(b, a, k, doneBtn);
+}
+function bindFeeling(a, doneBtn) {
+  const b = book();
+  const sync = () => { doneBtn.disabled = !a.stars; };
+  sync();
+  root.querySelectorAll('[data-star]').forEach(btn => btn.addEventListener('click', () => {
+    a.stars = Number(btn.dataset.star);
+    root.querySelectorAll('[data-star]').forEach(x => {
+      x.classList.toggle('on', Number(x.dataset.star) <= a.stars);
+      x.setAttribute('aria-pressed', Number(x.dataset.star) === a.stars);
+    });
+    putBook(b); sync();
+  }));
+  root.querySelectorAll('[data-mood]').forEach(btn => btn.addEventListener('click', () => {
+    a.mood = a.mood === btn.dataset.mood ? '' : btn.dataset.mood;
+    root.querySelectorAll('[data-mood]').forEach(x => x.setAttribute('aria-pressed', x.dataset.mood === a.mood));
+    putBook(b);
+  }));
+  doneBtn.addEventListener('click', () => finishActivity(() => a.stars > 0));
+}
+function bindText(b, a, k, doneBtn) {
+  const ta = document.getElementById('act-text');
+  const to = document.getElementById('letter-to');
+  let timer = null;
+  const save = () => { clearTimeout(timer); timer = null; putBook(b); };
+  const sync = () => {
+    a.text = ta.value;
+    if (to) a.to = to.value;
+    /* An activity emptied out no longer counts as finished. */
+    if (!a.text.trim()) a.done = false;
+    doneBtn.disabled = !a.text.trim();
+    clearTimeout(timer); timer = setTimeout(save, 500);
+  };
+  doneBtn.disabled = !a.text.trim();
+  ta.addEventListener('input', sync);
+  if (to) to.addEventListener('input', sync);
+  leaveHook = save;
+  doneBtn.addEventListener('click', () => { save(); finishActivity(() => !!a.text.trim()); });
+}
+function bindDrawing(b, a, doneBtn) {
+  const cv = document.getElementById('pad');
+  const g = cv.getContext('2d');
+  const undoBtn = document.getElementById('undo');
+  const eraser = document.getElementById('eraser');
+  let color = PENS[0], size = 10, erasing = false, drawing = false, last = null, marked = !!a.image, timer = null, dirty = false;
+  const history = [];
+  g.fillStyle = '#fff'; g.fillRect(0, 0, cv.width, cv.height);
+  g.lineCap = 'round'; g.lineJoin = 'round';
+  if (a.image) {
+    const img = new Image();
+    img.onload = () => g.drawImage(img, 0, 0, cv.width, cv.height);
+    img.src = a.image;
+  }
+  const sync = () => { doneBtn.disabled = !marked; undoBtn.disabled = !history.length; };
+  sync();
+  const save = () => {
+    clearTimeout(timer); timer = null;
+    if (!dirty) return;
+    dirty = false;
+    a.image = marked ? cv.toDataURL('image/jpeg', 0.85) : '';
+    if (!marked) a.done = false;
+    putBook(b);
+  };
+  const changed = () => { dirty = true; clearTimeout(timer); timer = setTimeout(save, 600); sync(); };
+  const snapshot = () => {
+    history.push({ data: g.getImageData(0, 0, cv.width, cv.height), marked });
+    if (history.length > 12) history.shift();
+  };
+  const pos = e => {
+    const r = cv.getBoundingClientRect();
+    return { x: (e.clientX - r.left) * cv.width / r.width, y: (e.clientY - r.top) * cv.height / r.height };
+  };
+  const seg = (p, q) => {
+    g.strokeStyle = erasing ? '#fff' : color;
+    g.lineWidth = erasing ? size * 2 : size;
+    g.beginPath(); g.moveTo(p.x, p.y); g.lineTo(q.x, q.y); g.stroke();
+  };
+  cv.addEventListener('pointerdown', e => {
+    e.preventDefault();
+    snapshot();
+    cv.setPointerCapture(e.pointerId);
+    drawing = true; last = pos(e);
+    seg(last, { x: last.x + 0.01, y: last.y });
+  });
+  cv.addEventListener('pointermove', e => {
+    if (!drawing) return;
+    const p = pos(e); seg(last, p); last = p;
+  });
+  const end = () => {
+    if (!drawing) return;
+    drawing = false;
+    if (!erasing) marked = true;
+    changed();
+  };
+  cv.addEventListener('pointerup', end);
+  cv.addEventListener('pointercancel', end);
+  root.querySelectorAll('[data-pen]').forEach(btn => btn.addEventListener('click', () => {
+    color = btn.dataset.pen; erasing = false;
+    eraser.setAttribute('aria-pressed', 'false');
+    root.querySelectorAll('[data-pen]').forEach(x => x.setAttribute('aria-pressed', x === btn));
+  }));
+  root.querySelectorAll('[data-size]').forEach(btn => btn.addEventListener('click', () => {
+    size = Number(btn.dataset.size);
+    root.querySelectorAll('[data-size]').forEach(x => x.setAttribute('aria-pressed', x === btn));
+  }));
+  eraser.addEventListener('click', () => {
+    erasing = !erasing;
+    eraser.setAttribute('aria-pressed', erasing);
+  });
+  undoBtn.addEventListener('click', () => {
+    const h = history.pop();
+    if (!h) return;
+    g.putImageData(h.data, 0, 0);
+    marked = h.marked;
+    changed();
+  });
+  document.getElementById('clear').addEventListener('click', () => {
+    snapshot();
+    g.fillStyle = '#fff'; g.fillRect(0, 0, cv.width, cv.height);
+    marked = false;
+    changed();
+  });
+  leaveHook = save;
+  doneBtn.addEventListener('click', () => { save(); finishActivity(() => marked); });
+}
+
+/* ---------- backup ---------- */
+function exportAll() {
+  if (!state.teacherOpen) return;
+  const data = { app: 'book-calendar', version: 1, exportedAt: new Date().toISOString(), kids: state.kids, books: state.books };
+  const url = URL.createObjectURL(new Blob([JSON.stringify(data)], { type: 'application/json' }));
+  const a = document.createElement('a');
+  a.href = url; a.download = 'book-calendar-' + todayStr() + '.json';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+  toast('기록을 파일로 내보냈어요.');
+}
+const str = (v, max) => typeof v === 'string' ? v.slice(0, max) : '';
+function cleanBook(raw, kidIds) {
+  if (!raw || typeof raw.id !== 'string' || !kidIds.has(raw.kidId)) return null;
+  if (typeof raw.title !== 'string' || !raw.title.trim()) return null;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(raw.date)) return null;
+  const a = emptyActivities(), r = raw.activities || {};
+  const f = r.feeling || {}, d = r.drawing || {}, l = r.letter || {}, s = r.sequel || {};
+  const stars = Number(f.stars);
+  a.feeling = { done: !!f.done, stars: stars >= 0 && stars <= 5 ? Math.round(stars) : 0, mood: str(f.mood, 20) };
+  a.drawing = { done: !!d.done, image: /^data:image\//.test(d.image) ? d.image : '' };
+  a.letter = { done: !!l.done, to: str(l.to, 20), text: str(l.text, 2000) };
+  a.sequel = { done: !!s.done, text: str(s.text, 2000) };
+  return {
+    id: raw.id, kidId: raw.kidId, title: raw.title.slice(0, 40), author: str(raw.author, 30), date: raw.date,
+    cover: /^data:image\//.test(raw.cover) ? raw.cover : '',
+    color: COLORS.includes(raw.color) ? raw.color : 'sun',
+    activities: a, createdAt: Number(raw.createdAt) || Date.now(),
+  };
+}
+async function importFile(file) {
+  if (!state.teacherOpen) return;
+  try {
+    const data = JSON.parse(await file.text());
+    if (data.app !== 'book-calendar' || !Array.isArray(data.kids) || !Array.isArray(data.books)) throw new Error('shape');
+    const kids = data.kids
+      .filter(k => k && typeof k.id === 'string' && typeof k.name === 'string' && k.name.trim())
+      .map(k => ({ id: k.id, name: k.name.slice(0, 12), createdAt: Number(k.createdAt) || Date.now() }));
+    const ids = new Set(kids.map(k => k.id).concat(state.kids.map(k => k.id)));
+    const books = data.books.map(b => cleanBook(b, ids)).filter(Boolean);
+    /* Merge: same id is replaced by the file, everything else stays. */
+    kids.forEach(k => { state.kids = state.kids.filter(x => x.id !== k.id); state.kids.push(k); putKid(k); });
+    books.forEach(b => { state.books = state.books.filter(x => x.id !== b.id); state.books.push(b); putBook(b); });
+    render();
+    toast(`친구 ${kids.length}명, 책 ${books.length}권을 불러왔어요.`);
+  } catch (e) {
+    toast('불러올 수 없는 파일이에요. 이 사이트에서 내보낸 파일을 골라 주세요.');
+  }
+}
+function bindTeacher() {
+  const input = document.getElementById('import-file');
+  if (input) input.addEventListener('change', e => {
+    const f = e.target.files[0];
+    if (f) importFile(f);
+  });
+}
+
+/* ---------- start ---------- */
+window.addEventListener('pagehide', () => { if (leaveHook) leaveHook(); });
+(async function start() {
+  await openDb();
+  if (!db.conn) db.ok = false;
+  const [kids, books, stored] = await Promise.all([readAll('kids'), readAll('books'), readAll('settings')]);
+  settings.teacher = stored.find(x => x.id === 'teacher') || null;
+  const ids = new Set(kids.map(k => k.id));
+  state.kids = kids.sort((a, b) => a.createdAt - b.createdAt);
+  state.books = books.map(b => cleanBook(b, ids)).filter(Boolean);
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
+  render();
+})();
+</script>
+</body>
+</html>
